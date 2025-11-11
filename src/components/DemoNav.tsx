@@ -42,6 +42,13 @@ export function DemoNav({ onNavigate }: DemoNavProps) {
                 >
                   🍽️ Restaurant Storefront
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onNavigate('search')}
+                >
+                  🔍 Search Page
+                </Button>
               </div>
             </div>
             
@@ -73,7 +80,7 @@ export function DemoNav({ onNavigate }: DemoNavProps) {
             </div>
             
             <div>
-              <h4 className="mb-2 text-sm">Account</h4>
+              <h4 className="mb-2 text-sm">Account & More</h4>
               <div className="space-y-2">
                 <Button
                   variant="outline"
@@ -81,6 +88,13 @@ export function DemoNav({ onNavigate }: DemoNavProps) {
                   onClick={() => onNavigate('account')}
                 >
                   👤 Customer Account
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onNavigate('catering')}
+                >
+                  🎉 Catering Services
                 </Button>
               </div>
             </div>

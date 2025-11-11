@@ -6,8 +6,18 @@ import { CheckoutFlow } from './components/CheckoutFlow';
 import { OrderConfirmation } from './components/OrderConfirmation';
 import { OrderTracking } from './components/OrderTracking';
 import { CustomerAccount } from './components/CustomerAccount';
+import { SearchPage } from './components/SearchPage';
+import { CateringPage } from './components/CateringPage';
 import { DemoNav } from './components/DemoNav';
-import { mockRestaurants, mockMenuItems, mockOrders, CartItem } from './lib/data';
+import { 
+  mockRestaurants, 
+  mockMenuItems, 
+  mockOrders, 
+  mockDiscountCodes, 
+  mockSpecialOfferings, 
+  mockReviews,
+  CartItem 
+} from './lib/data';
 import { Toaster } from './components/ui/sonner';
 
 type View = 
@@ -16,10 +26,12 @@ type View =
   | { type: 'checkout'; restaurantSlug: string; cart: CartItem[] }
   | { type: 'confirmation'; orderData: any }
   | { type: 'tracking'; orderNumber: string }
-  | { type: 'account' };
+  | { type: 'account' }
+  | { type: 'search' }
+  | { type: 'catering'; restaurantSlug: string };
 
 export default function App() {
-  const [view, setView] = useState<View>({ type: 'landing' });
+  const [view, setView] = useState<View>({ type: 'restaurant', slug: 'spice-garden' });
   const [lastOrderNumber, setLastOrderNumber] = useState('ORD-2024-001236');
 
   const handleRestaurantClick = (slug: string) => {
@@ -46,6 +58,14 @@ export default function App() {
     setView({ type: 'account' });
   };
 
+  const handleViewSearch = () => {
+    setView({ type: 'search' });
+  };
+
+  const handleViewCatering = (restaurantSlug: string) => {
+    setView({ type: 'catering', restaurantSlug });
+  };
+
   const handleViewOrder = (orderId: string) => {
     const order = mockOrders.find(o => o.id === orderId);
     if (order) {
@@ -56,7 +76,6 @@ export default function App() {
   const handleReorder = (orderId: string) => {
     const order = mockOrders.find(o => o.id === orderId);
     if (order) {
-      // Find restaurant from order
       const restaurant = mockRestaurants.find(r => r.name === order.restaurantName);
       if (restaurant) {
         setView({ type: 'checkout', restaurantSlug: restaurant.slug, cart: order.items });
@@ -101,10 +120,15 @@ export default function App() {
       case 'account':
         setView({ type: 'account' });
         break;
+      case 'search':
+        setView({ type: 'search' });
+        break;
+      case 'catering':
+        setView({ type: 'catering', restaurantSlug: 'spice-garden' });
+        break;
     }
   };
 
-  // Render based on current view
   if (view.type === 'landing') {
     return (
       <>
@@ -132,6 +156,9 @@ export default function App() {
           menuItems={mockMenuItems}
           onBack={handleBackToLanding}
           onCheckout={(cart) => handleCheckout(view.slug, cart)}
+          discountCodes={mockDiscountCodes}
+          specialOfferings={mockSpecialOfferings}
+          reviews={mockReviews}
         />
         <DemoNav onNavigate={handleDemoNavigate} />
         <Toaster />
@@ -179,14 +206,16 @@ export default function App() {
   }
 
   if (view.type === 'tracking') {
+    const order = mockOrders.find(o => o.orderNumber === view.orderNumber);
     return (
       <>
         <OrderTracking
           orderNumber={view.orderNumber}
-          restaurantName="Spice Garden"
-          status="preparing"
+          restaurantName={order?.restaurantName || 'Spice Garden'}
+          status={order?.status || 'preparing'}
           estimatedTime="20 minutes"
           onBack={handleBackToLanding}
+          messages={order?.messages}
         />
         <DemoNav onNavigate={handleDemoNavigate} />
         <Toaster />
@@ -202,6 +231,35 @@ export default function App() {
           onBack={handleBackToLanding}
           onViewOrder={handleViewOrder}
           onReorder={handleReorder}
+        />
+        <DemoNav onNavigate={handleDemoNavigate} />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (view.type === 'search') {
+    return (
+      <>
+        <SearchPage
+          restaurants={mockRestaurants}
+          menuItems={mockMenuItems}
+          onBack={handleBackToLanding}
+          onRestaurantSelect={handleRestaurantClick}
+        />
+        <DemoNav onNavigate={handleDemoNavigate} />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (view.type === 'catering') {
+    const restaurant = mockRestaurants.find(r => r.slug === view.restaurantSlug);
+    return (
+      <>
+        <CateringPage
+          restaurantName={restaurant?.name || 'Spice Garden'}
+          onBack={() => setView({ type: 'restaurant', slug: view.restaurantSlug })}
         />
         <DemoNav onNavigate={handleDemoNavigate} />
         <Toaster />

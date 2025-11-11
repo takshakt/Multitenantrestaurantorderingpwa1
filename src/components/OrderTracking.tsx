@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Phone, AlertCircle, CheckCircle, Clock, Package, Bike, Home } from 'lucide-react';
+import { ChevronLeft, Phone, AlertCircle, CheckCircle, Clock, Package, Bike, Home, Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Textarea } from './ui/textarea';
+import { OrderMessage } from '../lib/data';
 
 interface OrderTrackingProps {
   orderNumber: string;
@@ -10,6 +13,7 @@ interface OrderTrackingProps {
   status: 'placed' | 'confirmed' | 'preparing' | 'on-the-way' | 'delivered';
   estimatedTime: string;
   onBack: () => void;
+  messages?: OrderMessage[];
 }
 
 const statusSteps = [
@@ -25,9 +29,12 @@ export function OrderTracking({
   restaurantName,
   status,
   estimatedTime,
-  onBack
+  onBack,
+  messages = []
 }: OrderTrackingProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [newMessage, setNewMessage] = useState('');
+  const [conversationMessages, setConversationMessages] = useState<OrderMessage[]>(messages);
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -36,6 +43,31 @@ export function OrderTracking({
   
   const currentStepIndex = statusSteps.findIndex(step => step.id === status);
   const progressValue = ((currentStepIndex + 1) / statusSteps.length) * 100;
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+    
+    const message: OrderMessage = {
+      id: Date.now().toString(),
+      sender: 'customer',
+      message: newMessage,
+      timestamp: new Date().toISOString()
+    };
+    
+    setConversationMessages([...conversationMessages, message]);
+    setNewMessage('');
+    
+    // Simulate restaurant response (in real app, this would come from server)
+    setTimeout(() => {
+      const autoReply: OrderMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'restaurant',
+        message: 'Thank you for your message! We have received your request and will address it shortly.',
+        timestamp: new Date().toISOString()
+      };
+      setConversationMessages(prev => [...prev, autoReply]);
+    }, 2000);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,6 +168,71 @@ export function OrderTracking({
             })}
           </div>
         </div>
+
+        {/* Messages Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Order Messages</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Message History */}
+            {conversationMessages.length > 0 && (
+              <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
+                {conversationMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        msg.sender === 'customer'
+                          ? 'bg-primary text-white'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      <p className="text-sm mb-1">{msg.message}</p>
+                      <p
+                        className={`text-xs ${
+                          msg.sender === 'customer'
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {new Date(msg.timestamp).toLocaleTimeString()} · {msg.sender === 'customer' ? 'You' : restaurantName}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {conversationMessages.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4 mb-4">
+                No messages yet. Send a message to the restaurant if you have any special requests.
+              </p>
+            )}
+
+            <Separator className="my-4" />
+
+            {/* New Message Input */}
+            <div className="space-y-3">
+              <Textarea
+                placeholder="Send a message to the restaurant (e.g., special requests, delivery instructions)..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                rows={3}
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                className="w-full"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Send Message
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Live Updates */}
         {status === 'on-the-way' && (
