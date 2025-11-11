@@ -64,12 +64,20 @@ export function CheckoutFlow({
     });
   };
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setPromoCode(code);
-    toast.success(`Code ${code} copied and applied!`);
-    setTimeout(() => setCopiedCode(null), 2000);
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setPromoCode(code);
+      toast.success(`Code ${code} copied and applied!`);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (error) {
+      // Fallback for when clipboard API is not available
+      setCopiedCode(code);
+      setPromoCode(code);
+      toast.success(`Code ${code} applied!`);
+      setTimeout(() => setCopiedCode(null), 2000);
+    }
   };
 
   const progressValue = (step / 3) * 100;

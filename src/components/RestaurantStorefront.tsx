@@ -83,11 +83,18 @@ export function RestaurantStorefront({
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    toast.success(`Code ${code} copied to clipboard!`);
-    setTimeout(() => setCopiedCode(null), 2000);
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      toast.success(`Code ${code} copied to clipboard!`);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (error) {
+      // Fallback for when clipboard API is not available
+      setCopiedCode(code);
+      toast.success(`Code: ${code}`);
+      setTimeout(() => setCopiedCode(null), 2000);
+    }
   };
 
   // Auto-scroll reviews
