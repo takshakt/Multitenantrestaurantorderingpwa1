@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Star, Clock, MapPin, Info, ShoppingCart, User, Search, ChevronLeft, Phone, Mail, Tag, Sparkles, X } from 'lucide-react';
+import { Star, Clock, MapPin, Info, ShoppingCart, User, Search, ChevronLeft, Phone, Mail, Tag, Sparkles, X, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -33,6 +34,7 @@ export function RestaurantStorefront({
   const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'collection'>('delivery');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const reviewsContainerRef = useRef<HTMLDivElement>(null);
   
   const categories = Array.from(new Set(menuItems.map(item => item.category)));
@@ -80,6 +82,13 @@ export function RestaurantStorefront({
   
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast.success(`Code ${code} copied to clipboard!`);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
 
   // Auto-scroll reviews
   useEffect(() => {
@@ -223,11 +232,12 @@ export function RestaurantStorefront({
       {/* Action Bar */}
       <section className="bg-white border-b border-border sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
             <Button
               variant={fulfillmentType === 'delivery' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFulfillmentType('delivery')}
+              className="flex-shrink-0"
             >
               🚴 Delivery · {restaurant.deliveryTime} · £{restaurant.deliveryFee.toFixed(2)}
             </Button>
@@ -235,6 +245,7 @@ export function RestaurantStorefront({
               variant={fulfillmentType === 'collection' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFulfillmentType('collection')}
+              className="flex-shrink-0"
             >
               🏪 Collection · 15-20 min · Free
             </Button>
@@ -322,9 +333,23 @@ export function RestaurantStorefront({
                 <Card key={code.code} className="border-2 border-dashed border-primary/30 bg-primary/5">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className="bg-primary text-white border-primary">
-                        {code.code}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-primary text-white border-primary">
+                          {code.code}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleCopyCode(code.code)}
+                        >
+                          {copiedCode === code.code ? (
+                            <Check className="w-3 h-3 text-success" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
                       <span className="text-primary">{code.discount}</span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{code.description}</p>

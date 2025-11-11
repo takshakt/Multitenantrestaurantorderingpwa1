@@ -8,6 +8,8 @@ import { OrderTracking } from './components/OrderTracking';
 import { CustomerAccount } from './components/CustomerAccount';
 import { SearchPage } from './components/SearchPage';
 import { CateringPage } from './components/CateringPage';
+import { ComingSoonPage } from './components/ComingSoonPage';
+import { CurrentlyOfflinePage } from './components/CurrentlyOfflinePage';
 import { DemoNav } from './components/DemoNav';
 import { 
   mockRestaurants, 
@@ -28,7 +30,9 @@ type View =
   | { type: 'tracking'; orderNumber: string }
   | { type: 'account' }
   | { type: 'search' }
-  | { type: 'catering'; restaurantSlug: string };
+  | { type: 'catering'; restaurantSlug: string }
+  | { type: 'coming-soon'; restaurantSlug: string }
+  | { type: 'offline'; restaurantSlug: string };
 
 export default function App() {
   const [view, setView] = useState<View>({ type: 'restaurant', slug: 'spice-garden' });
@@ -126,6 +130,12 @@ export default function App() {
       case 'catering':
         setView({ type: 'catering', restaurantSlug: 'spice-garden' });
         break;
+      case 'coming-soon':
+        setView({ type: 'coming-soon', restaurantSlug: 'spice-garden' });
+        break;
+      case 'offline':
+        setView({ type: 'offline', restaurantSlug: 'spice-garden' });
+        break;
     }
   };
 
@@ -179,6 +189,7 @@ export default function App() {
           restaurantName={restaurant.name}
           onBack={() => setView({ type: 'restaurant', slug: view.restaurantSlug })}
           onConfirm={handleConfirmOrder}
+          discountCodes={mockDiscountCodes}
         />
         <DemoNav onNavigate={handleDemoNavigate} />
         <Toaster />

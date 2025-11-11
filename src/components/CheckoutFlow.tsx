@@ -1,32 +1,38 @@
 import { useState } from 'react';
-import { ChevronLeft, Plus, Minus, X, Tag, Lock, CreditCard, Smartphone } from 'lucide-react';
+import { ChevronLeft, Plus, Minus, X, Tag, Lock, CreditCard, Smartphone, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Progress } from './ui/progress';
 import { Separator } from './ui/separator';
+import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { CartItem } from '../lib/data';
+import { CartItem, DiscountCode } from '../lib/data';
 
 interface CheckoutFlowProps {
   cart: CartItem[];
   restaurantName: string;
   onBack: () => void;
   onConfirm: (orderData: any) => void;
+  discountCodes?: DiscountCode[];
 }
 
 export function CheckoutFlow({
   cart,
   restaurantName,
   onBack,
-  onConfirm
+  onConfirm,
+  discountCodes = []
 }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'collection'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [showOffers, setShowOffers] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -56,6 +62,14 @@ export function CheckoutFlow({
       paymentMethod,
       total
     });
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setPromoCode(code);
+    toast.success(`Code ${code} copied and applied!`);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const progressValue = (step / 3) * 100;
@@ -383,6 +397,70 @@ export function CheckoutFlow({
                   <p className="text-sm text-success mt-2">
                     ✓ Promo code applied!
                   </p>
+                )}
+                
+                {/* Available Offers */}
+                {discountCodes.length > 0 && (
+                  <div className="mt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowOffers(!showOffers)}
+                      className="w-full justify-between h-auto p-0 hover:bg-transparent"
+                    >
+                      <span className="text-sm text-primary">
+                        {discountCodes.length} offer{discountCodes.length > 1 ? 's' : ''} available
+                      </span>
+                      {showOffers ? (
+                        <ChevronUp className="w-4 h-4 text-primary" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-primary" />
+                      )}
+                    </Button>
+                    
+                    {showOffers && (
+                      <div className="mt-3 space-y-2">
+                        {discountCodes.map((code) => (
+                          <div
+                            key={code.code}
+                            className="border border-dashed border-primary/30 bg-primary/5 rounded-md p-3"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="bg-primary text-white border-primary text-xs">
+                                  {code.code}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0"
+                                  onClick={() => handleCopyCode(code.code)}
+                                >
+                                  {copiedCode === code.code ? (
+                                    <Check className="w-3 h-3 text-success" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </Button>
+                              </div>
+                              <span className="text-xs text-primary">{code.discount}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-1">{code.description}</p>
+                            {code.minOrder && (
+                              <p className="text-xs text-muted-foreground">
+                                Min order: £{code.minOrder.toFixed(2)}
+                              </p>
+                            )}
+                            {code.validUntil && (
+                              <p className="text-xs text-muted-foreground">
+                                Valid until: {code.validUntil}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               
