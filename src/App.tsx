@@ -278,5 +278,40 @@ export default function App() {
     );
   }
 
+  if (view.type === 'coming-soon') {
+    const restaurant = mockRestaurants.find(r => r.slug === view.restaurantSlug);
+    return (
+      <>
+        <ComingSoonPage
+          restaurantName={restaurant?.name || 'Spice Garden'}
+          onBack={handleBackToLanding}
+        />
+        <DemoNav onNavigate={handleDemoNavigate} />
+        <Toaster />
+      </>
+    );
+  }
+
+  if (view.type === 'offline') {
+    const restaurant = mockRestaurants.find(r => r.slug === view.restaurantSlug);
+    if (!restaurant) {
+      return <div>Restaurant not found</div>;
+    }
+    
+    return (
+      <>
+        <CurrentlyOfflinePage
+          restaurantName={restaurant.name}
+          restaurantLogo={restaurant.logo}
+          openingHours={restaurant.detailedHours}
+          phone={restaurant.phone}
+          onBack={handleBackToLanding}
+        />
+        <DemoNav onNavigate={handleDemoNavigate} />
+        <Toaster />
+      </>
+    );
+  }
+
   return null;
 }

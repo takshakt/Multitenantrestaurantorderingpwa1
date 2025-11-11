@@ -98,6 +98,26 @@ export function DemoNav({ onNavigate }: DemoNavProps) {
                 </Button>
               </div>
             </div>
+            
+            <div>
+              <h4 className="mb-2 text-sm">Status Pages</h4>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onNavigate('coming-soon')}
+                >
+                  🚧 Coming Soon
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => onNavigate('offline')}
+                >
+                  ⏸️ Currently Offline
+                </Button>
+              </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
